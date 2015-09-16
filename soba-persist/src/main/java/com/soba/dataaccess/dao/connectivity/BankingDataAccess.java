@@ -6,17 +6,26 @@ package com.soba.dataaccess.dao.connectivity;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 539471
  *
  */
+@Component
 public class BankingDataAccess 
 {
 	private DataSource dataSource;
 	private Connection connection;
+	
+	private static Logger logger = LoggerFactory.getLogger(BankingDataAccess.class);
 	
 	/**
 	 * @return the dataSource
@@ -28,20 +37,36 @@ public class BankingDataAccess
 	/**
 	 * @param dataSource the dataSource to set
 	 */
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 	
-	public Connection createConnection()
-	{
-		//Get the connection instance and return it
+	/**
+	 * Create a database connection using the configured dataSource
+	 * @return
+	 */
+	public Connection createConnection() {
+
+		try {
+			connection = dataSource.getConnection();
+		} catch (SQLException e) {
+			logger.error("Could not create a database connection");
+		}
 		return connection;
 	}
 	
-	public PreparedStatement createPreparedStatement()
+	public PreparedStatement createPreparedStatement(String sqlQuery)
 	{
 		//Create the Prepared Statement
-		return null;
+		PreparedStatement preparedStatement =  null;
+		try 
+		{
+			preparedStatement = connection.prepareStatement(sqlQuery);
+		} catch (SQLException e) {
+			logger.error("Could not create a prepared statement");
+		}
+		return preparedStatement;
 	}
 	
 	public void closePreparedStatement(PreparedStatement preparedStatement)
